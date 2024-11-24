@@ -1,11 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
+import pandas as pd
 
 # Вихідні дані
 x_min, x_max = 0, np.pi  # Проміжок [0, π]
 n_points = 15            # Кількість точок для таблиці
-x_table = np.linspace(x_min, x_max, n_points)  # Рівномірний розподіл точок
+custom_point = 0.7
+x_table = np.linspace(x_min, x_max, n_points) # Рівномірний розподіл точок
+x_table = np.append(x_table, custom_point)
+x_table = np.sort(x_table)
 y_table = np.sin(x_table)                      # Значення аналітичної функції sin(x)
 
 # Обчислення різниць для методу Ньютона
@@ -75,3 +79,8 @@ plt.ylabel("y")
 plt.legend()
 plt.grid()
 plt.show()
+
+table_data = {"x": x_table, "sin(x)": y_table}
+table_df = pd.DataFrame(table_data)
+
+print(table_df)
