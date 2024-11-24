@@ -7,18 +7,19 @@ import pandas as pd
 x_min, x_max = 0, np.pi  # Проміжок [0, π]
 n_points = 15            # Кількість точок для таблиці
 custom_point = 0.7
-x_table = np.linspace(x_min, x_max, n_points) # Рівномірний розподіл точок
+
+# Табличні значення
+x_table = np.linspace(x_min, x_max, n_points)  # Рівномірний розподіл точок
 x_table = np.append(x_table, custom_point)
-x_table = np.sort(x_table)
+x_table = np.sort(x_table)                     # Сортування точок
 y_table = np.sin(x_table)                      # Значення аналітичної функції sin(x)
 
-# Обчислення різниць для методу Ньютона
+# Обчислення розділених різниць для методу Ньютона
 def divided_differences(x, y):
     n = len(x)
-    coef = np.zeros(n)
-    coef[0] = y[0]
+    coef = np.copy(y)  # Початкові значення коефіцієнтів
     for j in range(1, n):
-        coef[j] = (y[j] - coef[j - 1]) / (x[j] - x[j - 1])
+        coef[j:] = (coef[j:] - coef[j - 1]) / (x[j:] - x[j - 1])
     return coef
 
 # Поліном Ньютона
@@ -53,14 +54,14 @@ plt.show()
 
 # Задача оберненої інтерполяції
 y_target = 0.5  # Значення, яке шукаємо в таблиці
-# Розв'язання рівняння методом Ньютона для табличної функції
+
 def inverse_interpolation(y_target, x_table, y_table):
     # Побудова інтерполяційної функції
     def newton_interp_func(x):
         return newton_polynomial(x, x_table, newton_coef) - y_target
 
-    # Використовуємо scipy fsolve для пошуку кореня
-    x_guess = np.mean(x_table)  # Початкове наближення
+    # Початкове наближення ближче до очікуваного розв'язку
+    x_guess = 0.5
     x_solution = fsolve(newton_interp_func, x_guess)[0]
     return x_solution
 
@@ -80,6 +81,7 @@ plt.legend()
 plt.grid()
 plt.show()
 
+# Таблиця значень
 table_data = {"x": x_table, "sin(x)": y_table}
 table_df = pd.DataFrame(table_data)
 
