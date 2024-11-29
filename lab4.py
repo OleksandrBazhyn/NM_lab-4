@@ -86,3 +86,48 @@ table_data = {"x": x_table, "sin(x)": y_table}
 table_df = pd.DataFrame(table_data)
 
 print(table_df)
+
+
+
+# Функція для обчислення розділених різниць
+def compute_divided_differences(x_table, y_table):
+    n = len(x_table)
+    divided_diff = np.zeros((n, n))
+    divided_diff[:, 0] = y_table  # Перший стовпець — значення функції
+    
+    for j in range(1, n):
+        for i in range(n - j):
+            divided_diff[i, j] = (divided_diff[i + 1, j - 1] - divided_diff[i, j - 1]) / (x_table[i + j] - x_table[i])
+    
+    return divided_diff
+
+# Обчислення коефіцієнтів полінома Ньютона
+divided_diff_table = compute_divided_differences(x_table, y_table)
+newton_coefficients = divided_diff_table[0, :] 
+
+divided_diff_df = pd.DataFrame(np.round(divided_diff_table, 4), 
+                               columns=[f"Lv {i}" for i in range(len(x_table))], 
+                               index=[f"x{i}" for i in range(len(x_table))])
+
+
+def newton_interpolation(x_target, x_nodes, coefficients):
+    n = len(coefficients)
+    interpolated_value = coefficients[0]
+    product_term = 1.0
+    for i in range(1, n):
+        product_term *= (x_target - x_nodes[i - 1])
+        interpolated_value += coefficients[i] * product_term
+    return interpolated_value
+
+interpolated_value = newton_interpolation(0.7, x_table, newton_coefficients)
+
+
+# Вивід результатів
+print("Таблиця розділених різниць:")
+print(divided_diff_df)
+
+print("\nКоефіцієнти полінома Ньютона:")
+for i, coef in enumerate(newton_coefficients):
+    print(f"a[{i}] = {coef:.6f}")
+
+print(f"\nІнтерпольоване значення в точці x = {0.7}: {interpolated_value:.6f}")
