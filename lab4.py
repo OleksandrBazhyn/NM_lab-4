@@ -104,10 +104,31 @@ def compute_divided_differences(x_table, y_table):
 # Обчислення коефіцієнтів полінома Ньютона
 divided_diff_table = compute_divided_differences(x_table, y_table)
 newton_coefficients = divided_diff_table[0, :] 
+# Фільтрація стовпців, що містять лише нулі
+def filter_zero_columns(table):
+    non_zero_mask = ~np.all(np.isclose(table, 0), axis=0)  # Знаходимо стовпці, де всі елементи ≈ 0
+    return table[:, non_zero_mask]
 
-divided_diff_df = pd.DataFrame(np.round(divided_diff_table, 4), 
-                               columns=[f"Lv {i}" for i in range(len(x_table))], 
-                               index=[f"x{i}" for i in range(len(x_table))])
+# Фільтрація нулів
+def filter_zero_values(table):
+    table[table == 0] = np.nan  # Заміна нулів на NaN
+    return table
+
+# Обчислення розділених різниць
+divided_diff_table_filtered = filter_zero_columns(divided_diff_table)
+
+# Додавання фільтрації для нулів
+divided_diff_table_filtered = filter_zero_values(divided_diff_table_filtered)
+
+# Перетворення в DataFrame з науковим представленням чисел
+divided_diff_df = pd.DataFrame(
+    divided_diff_table_filtered,
+    columns=[f"Lv {i}" for i in range(divided_diff_table_filtered.shape[1])],
+    index=[f"x{i}" for i in range(len(x_table))]
+)
+
+# Формат чисел у науковому вигляді
+divided_diff_df = divided_diff_df.applymap(lambda x: f"{x:.2e}" if pd.notna(x) else "")  # Якщо NaN, то порожньо
 
 
 def newton_interpolation(x_target, x_nodes, coefficients):
@@ -128,6 +149,6 @@ print(divided_diff_df)
 
 print("\nКоефіцієнти полінома Ньютона:")
 for i, coef in enumerate(newton_coefficients):
-    print(f"a[{i}] = {coef:.6f}")
+    print(f"a[{i}] = {coef:.6e}")
 
 print(f"\nІнтерпольоване значення в точці x = {0.7}: {interpolated_value:.6f}")
